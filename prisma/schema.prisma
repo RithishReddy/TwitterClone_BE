@@ -1,0 +1,80 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Users {
+  id        Int         @id @default(autoincrement())
+  name      String
+  user_name String      @unique
+  email     String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  image     String      @default("https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png") @db.VarChar(255)
+  bio       String      @db.VarChar(255)
+  followers Followers[] @relation("referFollowers")
+  following Followers[] @relation("referFollowing")
+  tweets    Tweets[]
+  Likes     Likes[]
+  Comments  Comments[]
+
+  @@map("users")
+}
+
+model Followers {
+  follower_id Int
+  followed_id Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User1       Users    @relation("referFollowers", fields: [followed_id], references: [id])
+  User2       Users    @relation("referFollowing", fields: [follower_id], references: [id])
+
+  @@unique([follower_id, followed_id])
+  @@map("followers")
+}
+
+model Tweets {
+  id        Int        @id @default(autoincrement())
+  message   String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user_id   Int
+  user      Users      @relation(fields: [user_id], references: [id])
+  Likes     Likes[]
+  Comments  Comments[]
+
+  @@map("tweets")
+}
+
+model Comments {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  tweet_id  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  comment   String
+  user      Users    @relation(fields: [user_id], references: [id])
+  tweet     Tweets   @relation(fields: [tweet_id], references: [id])
+
+  @@map("comments")
+}
+
+model Likes {
+  id        Int      @id @default(autoincrement())
+  user_id   Int
+  tweet_id  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      Users    @relation(fields: [user_id], references: [id])
+  tweet     Tweets   @relation(fields: [tweet_id], references: [id])
+
+  @@unique([user_id, tweet_id])
+  @@map("likes")
+}
