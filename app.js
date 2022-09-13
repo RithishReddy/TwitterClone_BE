@@ -35,6 +35,7 @@ app.use("/api/v1/followers",require("./routes/followersRoute"))
 
 app.use("/api/v1/search",require("./routes/searchRoute"))
 app.use("/api/v1/like",require("./routes/likeRoute"))
+app.use("/api/v1/comment",require("./routes/commentsRoute"))
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

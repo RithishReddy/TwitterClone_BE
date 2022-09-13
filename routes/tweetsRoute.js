@@ -8,6 +8,7 @@ router.get("/",tweetController.tweets)
 router.get("/profile", tweetController.userTweets);
 router.get("/home",tweetController.allTweets)
 router.post("/like/:tweet_id",tweetController.likeTweet)
+router.get("/user",tweetController.getTweetById)
 
 
 module.exports = router;

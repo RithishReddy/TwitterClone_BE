@@ -26,7 +26,14 @@ async function createUser(req, res, next) {
       },
       select: {
         message: true,
-        id:true
+        id:true,
+        user:{
+          select:{
+            email:true,
+            user_name:true
+          }
+        }
+  
       },
     });
     res.json({ profile, tweets });

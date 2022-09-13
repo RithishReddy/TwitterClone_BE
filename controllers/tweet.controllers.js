@@ -84,6 +84,31 @@ async function userTweets(req, res, next) {
   }
 }
 
+async function getTweetById(req, res, next) {
+  try {
+    const tweet_id = parseInt(req.query.tweet_id);
+    const tweet = await prisma.tweets.findUnique({
+      where: {
+        id: tweet_id,
+      },
+      include: {
+        user: {
+          select: {
+            name: true,
+            user_name: true,
+            image: true,
+            email:true
+          },
+        },
+      },
+    });
+    res.json(tweet);
+  } catch (err) {
+    console.error("Error while getting Products", err.message);
+    next(err);
+  }
+}
+
 async function allTweets(req, res, next) {
   try {
     const email = req.email;
@@ -133,27 +158,23 @@ async function allTweets(req, res, next) {
 }
 
 async function tweets(req, res, next) {
-  // console.log(req.query,req.params)  
+  // console.log(req.query,req.params)
   try {
     const show = req.query.show;
     const email = req.query.email;
-    const email1=req.email
-     console.log(email,email1)
+    const email1 = req.email;
+    console.log(email, email1);
 
     const id = await prisma.users.findUnique({
       select: {
         id: true,
-        
       },
       where: {
-        email:email1,
-
+        email: email1,
       },
     });
 
-  
-
-    if (show ==="all") {
+    if (show === "all") {
       try {
         const followers = await prisma.followers.findMany({
           where: {
@@ -175,14 +196,15 @@ async function tweets(req, res, next) {
               in: filteredFollowers,
             },
           },
-          include:{
-            user:{
-              select:{
-                name:true,
-                user_name:true,
-                image:true
-              }
-            }
+          include: {
+            user: {
+              select: {
+                name: true,
+                user_name: true,
+                image: true,
+                email:true
+              },
+            },
           },
           // select:{
           //   message:true
@@ -198,31 +220,32 @@ async function tweets(req, res, next) {
         next(err);
       }
     } else if (show === "user") {
-
       try {
         const id2 = await prisma.users.findUnique({
           select: {
             id: true,
-            
           },
           where: {
-            email:email,
-    
+            email: email,
           },
         });
 
         const tweets = await prisma.tweets.findMany({
-          include:{
-            user:{
-              select:{
-                name:true,
-                user_name:true,
-                image:true
-              }
-            }
+          include: {
+            user: {
+              select: {
+                name: true,
+                user_name: true,
+                image: true,
+                email:true
+              },
+            },
           },
           where: {
             user_id: id2.id,
+          },
+          orderBy: {
+            updatedAt: "desc",
           },
         });
 
@@ -231,51 +254,45 @@ async function tweets(req, res, next) {
         console.error("Error while getting Products", err.message);
         next(err);
       }
-    }
-
-    else if(show==="like")
-    {
+    } else if (show === "like") {
       try {
         const id2 = await prisma.users.findUnique({
           select: {
             id: true,
-            
           },
           where: {
-            email:email,
-    
+            email: email,
           },
         });
 
-        const tweets=await prisma.likes.findMany({
-
-          where:{
-            user_id:id2.id
-          }
-          ,select:{
-            tweet_id:true
-          }
-        })
-
-        const filteredTweets=tweets.map((tweet)=>{
-          return tweet.tweet_id;
-        })
-
-      
-        const likedTweets=await prisma.tweets.findMany({
-          where:{
-            id:{
-              in:filteredTweets
-            }
+        const tweets = await prisma.likes.findMany({
+          where: {
+            user_id: id2.id,
           },
-          include:{
-            user:{
-              select:{
-                name:true,
-                user_name:true,
-                image:true
-              }
-            }
+          select: {
+            tweet_id: true,
+          },
+        });
+
+        const filteredTweets = tweets.map((tweet) => {
+          return tweet.tweet_id;
+        });
+
+        const likedTweets = await prisma.tweets.findMany({
+          where: {
+            id: {
+              in: filteredTweets,
+            },
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                user_name: true,
+                image: true,
+                email:true
+              },
+            },
           },
           // select:{
           //   message:true
@@ -283,8 +300,7 @@ async function tweets(req, res, next) {
           orderBy: {
             updatedAt: "desc",
           },
-        })
-      
+        });
 
         res.json(likedTweets);
       } catch (err) {
@@ -297,7 +313,6 @@ async function tweets(req, res, next) {
     next(err);
   }
 }
-
 
 async function likeTweet(req, res, next) {
   try {
@@ -327,4 +342,11 @@ async function likeTweet(req, res, next) {
   }
 }
 
-module.exports = { createTweet, userTweets, allTweets, likeTweet,tweets };
+module.exports = {
+  createTweet,
+  userTweets,
+  getTweetById,
+  allTweets,
+  likeTweet,
+  tweets,
+};
